@@ -1,8 +1,8 @@
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import { collection } from 'rxfire/firestore';
-import { combineLatest } from 'rxjs';
-import { from, map } from 'rxjs/operators';
+import { from, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { Loader } from '@googlemaps/js-api-loader';
  
@@ -25,17 +25,7 @@ var coaches$ = collection(coachesRef)
 var players$ = collection(playersRef)
   .pipe(map(players => players.map(c => c.data())));;
 
-var data$ = combineLatest([centres$, coaches$, players$])
-.pipe(
-  map((data) => {
-    var [centres, coaches, players] = data;
-    return [
-        //spread the arrays out to combine as one array
-        ...centres,
-        ...coaches,
-        ...players,
-    ];
-}));
+
 centres$.subscribe(data => console.log(data));
 coaches$.subscribe(data => console.log(data));
 players$.subscribe(data => console.log(data));
@@ -47,29 +37,61 @@ const loader = new Loader({
     version: "weekly",
     libraries: ["places"]
 });
-
-const mapOptions = {
-    center: {
-        lat: 0,
-        lng: 0
-    },
-    zoom: 4
-};
-
-let stuff = loader
-  .load()
-  .then(() => {
-      return new google.maps.Map(document.getElementById("map"), mapOptions);
-  })
-  .catch(e => {
-      // do something
-  });
-
-const promiseSource = from(stuff);
-const map$ = promiseSource.subscribe(val => console.log(val));
+const map$ = from(loader.load().then(() => {
+    const mapOptions = {
+        center: {
+            lat: 0,
+            lng: 0
+        },
+        zoom: 4
+    };
+    return new google.maps.Map(document.getElementById("map"), mapOptions);
+}));
+map$.subscribe(data => console.log(data));
 
 
+var dataLoaded$ = combineLatest([centres$, coaches$, players$, map$])
+.startWith(false)
+.pipe(
+  map((data) => {
+      return true;
+    // console.log('finished loading data');
+    // debugger;
+    // const [centres, coaches, players, map] = data;
+    // const markers = addMarkers(map, centres);
 
+
+
+    //
+    // return [
+    //     //spread the arrays out to combine as one array
+    //     ...centres,
+    //     ...coaches,
+    //     ...players,
+    //     ...map
+    // ];
+}));
+
+
+dataLoaded$.subscribe({
+    complete() { console.log('done'); }
+});
+
+
+function addMarkers(map, centres){
+    const markerArr = [];
+    centres.map((centre) => {
+        const marker = new google.maps.Marker({
+            position: new google.maps.LatLng(centre.location._lat,centre.location._long),
+            title:centre.name
+        });
+        marker.addListener("click", () => {
+            console.log('Clicked', centre.name);
+        });
+        markerArr.push(marker);
+    });
+    return markerArr;
+}
 
 
 

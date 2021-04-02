@@ -45100,26 +45100,6 @@ var _jsApiLoader = require("@googlemaps/js-api-loader");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 var app = _app.default.initializeApp({
   apiKey: "AIzaSyAL-Jeu4Ck0gRc35Ga-cYNgCxVYhf9TVbk",
   authDomain: "tca-ratings.firebaseapp.com",
@@ -45149,14 +45129,6 @@ var players$ = (0, _firestore2.collection)(playersRef).pipe((0, _operators.map)(
   });
 }));
 ;
-var data$ = (0, _rxjs.combineLatest)([centres$, coaches$, players$]).pipe((0, _operators.map)(function (data) {
-  var _data = _slicedToArray(data, 3),
-      centres = _data[0],
-      coaches = _data[1],
-      players = _data[2];
-
-  return [].concat(_toConsumableArray(centres), _toConsumableArray(coaches), _toConsumableArray(players));
-}));
 centres$.subscribe(function (data) {
   return console.log(data);
 });
@@ -45173,21 +45145,53 @@ var loader = new _jsApiLoader.Loader({
   version: "weekly",
   libraries: ["places"]
 });
-var mapOptions = {
-  center: {
-    lat: 0,
-    lng: 0
-  },
-  zoom: 4
-};
-var stuff = loader.load().then(function () {
+var map$ = (0, _rxjs.from)(loader.load().then(function () {
+  var mapOptions = {
+    center: {
+      lat: 0,
+      lng: 0
+    },
+    zoom: 4
+  };
   return new google.maps.Map(document.getElementById("map"), mapOptions);
-}).catch(function (e) {// do something
+}));
+map$.subscribe(function (data) {
+  return console.log(data);
 });
-var promiseSource = (0, _operators.from)(stuff);
-var map$ = promiseSource.subscribe(function (val) {
-  return console.log(val);
-}); // collectionData(coachesRef, 'id')
+var dataLoaded$ = (0, _rxjs.combineLatest)([centres$, coaches$, players$, map$]).startWith(false).pipe((0, _operators.map)(function (data) {
+  return true; // console.log('finished loading data');
+  // debugger;
+  // const [centres, coaches, players, map] = data;
+  // const markers = addMarkers(map, centres);
+  //
+  // return [
+  //     //spread the arrays out to combine as one array
+  //     ...centres,
+  //     ...coaches,
+  //     ...players,
+  //     ...map
+  // ];
+}));
+dataLoaded$.subscribe({
+  complete: function complete() {
+    console.log('done');
+  }
+});
+
+function addMarkers(map, centres) {
+  var markerArr = [];
+  centres.map(function (centre) {
+    var marker = new google.maps.Marker({
+      position: new google.maps.LatLng(centre.location._lat, centre.location._long),
+      title: centre.name
+    });
+    marker.addListener("click", function () {
+      console.log('Clicked', centre.name);
+    });
+    markerArr.push(marker);
+  });
+  return markerArr;
+} // collectionData(coachesRef, 'id')
 //   .pipe(
 //     tap(cities => console.log('This is just an observable!'))
 //   )
@@ -45272,7 +45276,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63639" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51813" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
