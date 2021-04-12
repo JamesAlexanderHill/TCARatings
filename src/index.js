@@ -1,27 +1,41 @@
-import firebase from "firebase/app";
+import dotenv from 'dotenv';
+import { Loader } from '@googlemaps/js-api-loader';
 
-import "firebase/auth";
-import "firebase/firestore";
-import * as firebaseui from 'firebaseui'
-import 'firebaseui/dist/firebaseui.css'
+dotenv.config();
+const map = null;
+const googleMapsLoader = new Loader({
+  apiKey: process.env.MAPS_API,
+  version: "weekly",
+  libraries: ["drawing"]
+}).load();
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAL-Jeu4Ck0gRc35Ga-cYNgCxVYhf9TVbk",
-    authDomain: "tca-ratings.firebaseapp.com",
-    projectId: "tca-ratings",
-    storageBucket: "tca-ratings.appspot.com",
-    messagingSenderId: "64357630658",
-    appId: "1:64357630658:web:3011d2c8a5f12c7206b15b"
+const mapOptions = {
+  center: {
+    lat: -33.7809197,
+    lng: 150.9624176
+  },
+  zoom: 11
 };
-firebase.initializeApp(firebaseConfig);
-firebase.auth().useDeviceLanguage();
 
-var ui = new firebaseui.auth.AuthUI(firebase.auth());
-ui.start('#firebaseui-auth-container', {
-    signInSuccessUrl: '/map',
-    signInOptions: [
-        firebase.auth.EmailAuthProvider.PROVIDER_ID
-    ],
-});
-//get data from database (centres, coaches, players)
-//load map
+googleMapsLoader
+  .then(() => {
+    map = new google.maps.Map(document.getElementById("map"), mapOptions);
+    console.log("Map Loaded");
+  })
+  .then(() => {
+      addMarkers(map);
+      console.log("Markers Added");
+  })
+  .catch(e => {
+    // do something
+  });
+
+const addMarkers = (map) => {
+    console.log("Map: ", map)
+    new google.maps.Marker({
+        position: {lat: -33.7809197,lng: 150.9624176},
+        map,
+        title: "Hello World!",
+    });
+    return true;
+}
