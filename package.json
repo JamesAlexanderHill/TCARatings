@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.html",
   "scripts": {
-    "prestart": "rimraf ./dist && rimraf ./.parcel-cache",
+    "preteststart": "rimraf ./dist && rimraf ./.parcel-cache",
     "start": "parcel serve ./src/index.html --target client",
     "prebuild": "",
     "build": "parcel build ./src/index.html --target client"

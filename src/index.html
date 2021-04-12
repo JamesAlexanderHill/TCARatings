@@ -1,27 +1,30 @@
 <html>
     <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     </head>
     <body>
         <main>
             <div id="map" style="height: 100%;"></div>
-            <section class="absolute bottom-1 left-1 bg-white rounded-sm p-4 w-full sm:w-1/2 md:w-1/4">
+            <section id="modal" class="absolute bottom-6 left-3 bg-white rounded-sm shadow p-4 w-9/12 sm:w-1/2 md:w-1/4" style="display: none;">
                 <header>
-                    <h1>Centre Name</h1>
+                    <h1 id="centerName" class="text-xl font-medium">Centre Name</h1>
+                    <hr class="mt-2 mb-4">
                 </header>
-                <section>
-                    <h2>Coaches</h2>
-                    <main>
-                        <ul>
+                <section class="mb-4">
+                    <h2 class="text-lg font-medium">Coaches</h2>
+                    <main class="ml-2">
+                        <ul id="coaches">
                             <li>Coach 1</li>
                             <li>Coach 2</li>
                         </ul>
                     </main>
                 </section>
-                <section>
-                    <h2>Players</h2>
-                    <main>
-                        <ul>
+                <section >
+                    <h2 class="text-lg font-medium">Players</h2>
+                    <main class="ml-2">
+                        <ul id="players">
                             <li>Player 1</li>
                             <li>Player 2</li>
                         </ul>

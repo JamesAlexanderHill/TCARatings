@@ -571,14 +571,29 @@ var googleMapsLoader = new _googlemapsJsApiLoader.Loader({
   libraries: []
 }).load();
 var googleMaps$ = _rxjs.from(googleMapsLoader).pipe(_rxjsOperators.map(function () {
+  var mapStyles = [{
+    featureType: "poi.business",
+    stylers: [{
+      visibility: "off"
+    }]
+  }, {
+    featureType: "transit",
+    elementType: "labels.icon",
+    stylers: [{
+      visibility: "off"
+    }]
+  }];
   var mapOptions = {
     center: {
       lat: -33.7813976,
       lng: 151.102415
     },
-    zoom: 11
+    zoom: 11,
+    mapTypeId: 'hybrid',
+    mapTypeControl: false
   };
   var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+  map.setOptions(mapStyles);
   return map;
 }));
 // Get data from database
@@ -601,10 +616,10 @@ data$.subscribe({
 });
 // initialise map
 var initMap = function initMap(map, centres, coaches, players) {
-  addMarkers(map, centres);
+  addMarkers(map, centres, coaches);
 };
 // Add markers to the map
-var addMarkers = function addMarkers(map, centres) {
+var addMarkers = function addMarkers(map, centres, coaches) {
   var _loop = function _loop(i) {
     // add marker
     var marker = new google.maps.Marker({
@@ -617,24 +632,22 @@ var addMarkers = function addMarkers(map, centres) {
     });
     // add event listener
     marker.addListener("click", function () {
-      showCentreDetails(map, marker, centres[i].id);
+      showCentreDetails(map, marker, centres[i]);
     });
   };
-  // console.log("Map: ", map)
-  // new google.maps.Marker({
-  // position: {lat: -33.7809197,lng: 150.9624176},
-  // map,
-  // title: "Hello World!",
-  // });
   // loop through all the centres
   for (var i = 0; i < centres.length; i++) {
     _loop(i);
   }
 };
-var showCentreDetails = function showCentreDetails(map, marker, id) {
-  console.log(id);
+var showCentreDetails = function showCentreDetails(map, marker, centre, coaches) {
+  console.log(centre.id);
   map.setZoom(20);
   map.setCenter(marker.getPosition());
+  // update content
+  document.getElementById('centerName').innerHTML = centre.name;
+  // show content
+  document.getElementById("modal").style.display = 'block';
 };
 
 },{"dotenv":"6xp8S","firebase/app":"DR8kG","firebase/firestore":"q1chO","@googlemaps/js-api-loader":"3Pr8k","rxjs":"TNCCI","rxjs/operators":"6sgfP","rxfire/firestore":"5DHGR","@parcel/transformer-js/lib/esmodule-helpers.js":"4bVwR"}],"6xp8S":[function(require,module,exports) {
