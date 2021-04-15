@@ -608,15 +608,32 @@ var data$ = _rxjs.combineLatest([googleMaps$, centres$, coaches$, players$]);
 data$.subscribe({
   next: function next(data) {
     console.log("data$", data);
-    initMap.apply(void 0, _toConsumableArray(data));
+    updateMap.apply(void 0, _toConsumableArray(data));
   },
   complete: function complete() {
     return console.log('This is how it ends!');
   }
 });
+var markers = [];
 // initialise map
-var initMap = function initMap(map, centres, coaches, players) {
-  addMarkers(map, centres, coaches);
+var updateMap = function updateMap(map, centres, coaches, players) {
+  // addMarkers(map, centres, coaches);
+  if (markers.length == 0) {
+    // add all centres
+    addMarkers(map, centres, coaches);
+  }
+  // find new markers that dont exist and add them to the map
+  var newCentres = centres.filter(function (centre) {
+    // step through all id's in marker and check if it == centre.id
+    var flag = false;
+    for (var i = x; i < markers.length; i++) {
+      if (centre.id == markers.id) {
+        flag = true;
+      }
+    }
+    return flag;
+  });
+  addMarkers(map, newCentres);
 };
 // Add markers to the map
 var addMarkers = function addMarkers(map, centres, coaches) {

@@ -73,14 +73,31 @@ const data$ = combineLatest([googleMaps$, centres$, coaches$, players$]);
 data$.subscribe({
     next: data => {
         console.log("data$", data);
-        initMap(...data);
+        updateMap(...data);
     },
     complete: () => console.log('This is how it ends!'),
 });
 
+let markers = [];
 //initialise map
-const initMap = (map, centres, coaches, players) => {
-    addMarkers(map, centres, coaches);
+const updateMap = (map, centres, coaches, players) => {
+    // addMarkers(map, centres, coaches);
+    if(markers.length == 0){
+        //add all centres
+        addMarkers(map, centres, coaches);
+    }
+    //find new markers that dont exist and add them to the map
+    const newCentres = centres.filter((centre) => {
+        //step through all id's in marker and check if it == centre.id
+        let flag = false;
+        for(let i = x; i < markers.length; i++){
+            if(centre.id == markers.id){
+                flag = true;
+            }
+        }
+        return flag;
+    });
+    addMarkers(map, newCentres,)
 }
 
 //Add markers to the map
