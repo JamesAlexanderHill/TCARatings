@@ -5,8 +5,8 @@ import 'firebase/firestore';
 
 import { Loader } from '@googlemaps/js-api-loader';
 
-import { from, forkJoin, of, combineLatest, bindNodeCallback, fromEvent } from 'rxjs';
-import { map, tap, mergeMap } from 'rxjs/operators';
+import { from, forkJoin, of, combineLatest, bindNodeCallback } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 
 import { collectionData } from 'rxfire/firestore';
 
@@ -60,28 +60,49 @@ const googleMaps$ = from(googleMapsLoader)
     );
 
 //Get data from database
-const centres$ = from(db.collection('centres').get())
-.pipe(
-    map((querySnapshot) => {
-        const tempDoc = []
-        querySnapshot.docs.map((doc) => {
-            tempDoc.push({ id: doc.id, ...doc.data() });
-        });
-        return tempDoc;
-    })
-);
+const centresRef = db.collection('centres');
+const coachesRef = db.collection('coaches');
+const playersRef = db.collection('players');
 
-// Merge data and initiate map once everything has been resolved
-const initData$ = combineLatest([googleMaps$, centres$]);
-initData$.subscribe((data) => {
-    console.log(data);
-    const [map, centres] = data;
-    addMarkers(map, centres);
+const centres$ = collectionData(centresRef, 'id');
+const coaches$ = collectionData(coachesRef, 'id');
+const players$ = collectionData(playersRef, 'id');
+
+//Merge data and initiate map once everything has been resolved
+const data$ = combineLatest([googleMaps$, centres$, coaches$, players$]);
+data$.subscribe({
+    next: data => {
+        console.log("data$", data);
+        updateMap(...data);
+    },
+    complete: () => console.log('This is how it ends!'),
 });
 
 let markers = [];
-const addMarkers = (map, centres) => {
-    //loop through centres
+//initialise map
+const updateMap = (map, centres, coaches, players) => {
+    // addMarkers(map, centres, coaches);
+    if(markers.length == 0){
+        //add all centres
+        addMarkers(map, centres, coaches);
+    }
+    //find new markers that dont exist and add them to the map
+    const newCentres = centres.filter((centre) => {
+        //step through all id's in marker and check if it == centre.id
+        let flag = false;
+        for(let i = x; i < markers.length; i++){
+            if(centre.id == markers.id){
+                flag = true;
+            }
+        }
+        return flag;
+    });
+    addMarkers(map, newCentres,)
+}
+
+//Add markers to the map
+const addMarkers = (map, centres, coaches) => {
+    //loop through all the centres
     for(let i = 0; i < centres.length; i++){
         //add marker
         const marker = new google.maps.Marker({
@@ -89,14 +110,13 @@ const addMarkers = (map, centres) => {
             map,
             title: centres[i].name,
         });
-        marker.set("id", centres[i].id);
-        markers.push(marker);
+        
         //add event listener
-        // const markerEvent$ = fromEvent(marker, 'click').subscribe(event => console.log(event)); //TODO: get working!!!
-        const clicks = fromEvent(marker, 'click').subscribe(x => console.log('test', x));
+        marker.addListener("click", () => {
+            showCentreDetails(map, marker, centres[i]);
+        });
     }
-    console.log(markers);
-};
+}
 
 const showCentreDetails = (map, marker, centre, coaches) => {
     console.log(centre.id);
